@@ -1,4 +1,4 @@
-package com.antonioqm.screenprotector
+package com.mesquitadev.screenprotector
 
 import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.CordovaInterface

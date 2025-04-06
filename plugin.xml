@@ -29,6 +29,14 @@
             </feature>
         </config-file>
 
+        <config-file target="config.xml" parent="/widget">
+            <feature name="ScreenProtector">
+                <param name="ios-package" value="ScreenProtector"/>
+                <param name="onload" value="true"/>
+                <method name="testProtection"/>
+            </feature>
+        </config-file>
+
         <source-file src="src/ios/ScreenProtector.swift"/>
         <header-file src="src/ios/ScreenProtector-Bridging-Header.h"/>
         <resource-file src="src/ios/img/camera.png"/>

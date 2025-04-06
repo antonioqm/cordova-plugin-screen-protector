@@ -1,11 +1,13 @@
 {
   "name": "cordova-plugin-screen-protector",
   "version": "1.0.0",
-  "description": "A Cordova plugin to protect your app's content against screenshots and screen recordings on iOS",
+  "description": "A Cordova plugin to protect your app's content against screenshots and screen recordings on iOS and Android",
+  "types": "./types/index.d.ts",
   "cordova": {
     "id": "cordova-plugin-screen-protector",
     "platforms": [
-      "ios"
+      "ios",
+      "android"
     ]
   },
   "repository": {
@@ -15,17 +17,23 @@
   "keywords": [
     "ecosystem:cordova",
     "cordova-ios",
+    "cordova-android",
     "screen-protection",
     "screenshot",
     "screen-recording",
     "privacy",
-    "security"
+    "security",
+    "flag-secure",
+    "typescript",
+    "angular",
+    "ionic"
   ],
   "engines": {
     "cordovaDependencies": {
       "1.0.0": {
         "cordova": ">=9.0.0",
-        "cordova-ios": ">=6.0.0"
+        "cordova-ios": ">=6.0.0",
+        "cordova-android": ">=9.0.0"
       }
     }
   },

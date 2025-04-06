@@ -10,12 +10,32 @@ let pluginTag = "ScreenProtector"
     private var protectionWindow: UIWindow?
     private var isProtecting = false
     private var eventCallbacks: [String: String] = [:]
+    private var isInitialized = false
 
     override func pluginInitialize() {
         print("[\(pluginTag)] Plugin inicializado")
-        print("[\(pluginTag)] Status inicial: isProtecting=\(isProtecting)")
 
-        // Observa quando o usuário tira um print da tela
+        // Valida versão do iOS
+        guard #available(iOS 13.0, *) else {
+            print("[\(pluginTag)] Erro: iOS 13.0 ou superior é necessário")
+            return
+        }
+
+        // Registra observers
+        do {
+            try registerObservers()
+            isInitialized = true
+            print("[\(pluginTag)] Status inicial: isProtecting=\(isProtecting)")
+        } catch {
+            print("[\(pluginTag)] Erro ao registrar observers: \(error.localizedDescription)")
+        }
+
+        // Verifica estado inicial da gravação
+        checkInitialRecordingState()
+    }
+
+    private func registerObservers() throws {
+        // Observer para screenshots
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(userDidTakeScreenshot),
@@ -24,7 +44,7 @@ let pluginTag = "ScreenProtector"
         )
         print("[\(pluginTag)] Observer de screenshot registrado")
 
-        // Observa quando a tela está sendo gravada ou espelhada
+        // Observer para gravação de tela
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(screenCaptureChanged),
@@ -32,8 +52,9 @@ let pluginTag = "ScreenProtector"
             object: nil
         )
         print("[\(pluginTag)] Observer de screen recording registrado")
+    }
 
-        // Verifica o estado inicial da gravação
+    private func checkInitialRecordingState() {
         DispatchQueue.main.async { [weak self] in
             let isCaptured = UIScreen.main.isCaptured
             print("[\(pluginTag)] Verificação inicial de gravação: isCaptured=\(isCaptured)")
@@ -68,9 +89,23 @@ let pluginTag = "ScreenProtector"
         if let context = UIGraphicsGetCurrentContext() {
             // Desenha o círculo laranja
             let circlePath = UIBezierPath(ovalIn: CGRect(x: 0, y: 0, width: size, height: size))
-            // Cor #fd6401
             UIColor(red: 253/255, green: 100/255, blue: 1/255, alpha: 1.0).setFill()
             circlePath.fill()
+
+            // Adiciona o ícone da câmera
+            if let bundlePath = Bundle.main.path(forResource: "camera", ofType: "png"),
+               let cameraImage = UIImage(contentsOfFile: bundlePath) {
+                let imageSize = size * 0.6 // 60% do tamanho do círculo
+                let imageRect = CGRect(
+                    x: (size - imageSize) / 2,
+                    y: (size - imageSize) / 2,
+                    width: imageSize,
+                    height: imageSize
+                )
+                cameraImage.draw(in: imageRect, blendMode: .normal, alpha: 1.0)
+            } else {
+                print("[\(pluginTag)] Erro: Não foi possível carregar a imagem da câmera")
+            }
         }
 
         imageView.image = UIGraphicsGetImageFromCurrentImageContext()
@@ -305,6 +340,87 @@ let pluginTag = "ScreenProtector"
         } else {
             disableProtection()
         }
+    }
+
+    @objc func getStatus(_ command: CDVInvokedUrlCommand) {
+        let status: [String: Any] = [
+            "isInitialized": isInitialized,
+            "isProtecting": isProtecting,
+            "isScreenBeingCaptured": UIScreen.main.isCaptured,
+            "iosVersion": UIDevice.current.systemVersion,
+            "isIOS13OrHigher": ProcessInfo().isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 13, minorVersion: 0, patchVersion: 0))
+        ]
+
+        let result = CDVPluginResult(
+            status: CDVCommandStatus_OK,
+            messageAs: status
+        )
+
+        self.commandDelegate?.send(result, callbackId: command.callbackId)
+    }
+
+    @objc func validateSetup(_ command: CDVInvokedUrlCommand) {
+        var issues: [String] = []
+
+        // Verifica versão do iOS
+        if !ProcessInfo().isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 13, minorVersion: 0, patchVersion: 0)) {
+            issues.append("iOS 13.0 ou superior é necessário")
+        }
+
+        // Verifica se o plugin foi inicializado
+        if !isInitialized {
+            issues.append("Plugin não foi inicializado corretamente")
+        }
+
+        // Verifica se os observers estão ativos
+        let center = NotificationCenter.default
+        let hasScreenshotObserver = center.observationInfo != nil
+        let hasRecordingObserver = center.observationInfo != nil
+
+        if !hasScreenshotObserver {
+            issues.append("Observer de screenshot não está ativo")
+        }
+        if !hasRecordingObserver {
+            issues.append("Observer de gravação não está ativo")
+        }
+
+        let status = CDVCommandStatus_OK
+        let message: [String: Any] = [
+            "isValid": issues.isEmpty,
+            "issues": issues
+        ]
+
+        let result = CDVPluginResult(
+            status: status,
+            messageAs: message
+        )
+
+        self.commandDelegate?.send(result, callbackId: command.callbackId)
+    }
+
+    @objc func testProtection(_ command: CDVInvokedUrlCommand) {
+        guard let reason = command.arguments.first as? String else {
+            let result = CDVPluginResult(
+                status: CDVCommandStatus_ERROR,
+                messageAs: "Razão não especificada"
+            )
+            self.commandDelegate?.send(result, callbackId: command.callbackId)
+            return
+        }
+
+        // Simula a proteção
+        enableProtection(reason: reason)
+
+        // Agenda a remoção da proteção após 3 segundos
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            self?.disableProtection()
+        }
+
+        let result = CDVPluginResult(
+            status: CDVCommandStatus_OK,
+            messageAs: ["status": "Protection test started"]
+        )
+        self.commandDelegate?.send(result, callbackId: command.callbackId)
     }
 
     deinit {
