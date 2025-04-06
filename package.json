@@ -1,0 +1,38 @@
+{
+  "name": "cordova-plugin-screen-protector",
+  "version": "1.0.0",
+  "description": "A Cordova plugin to protect your app's content against screenshots and screen recordings on iOS",
+  "cordova": {
+    "id": "cordova-plugin-screen-protector",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antonioqm/cordova-plugin-screen-protector.git"
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-ios",
+    "screen-protection",
+    "screenshot",
+    "screen-recording",
+    "privacy",
+    "security"
+  ],
+  "engines": {
+    "cordovaDependencies": {
+      "1.0.0": {
+        "cordova": ">=9.0.0",
+        "cordova-ios": ">=6.0.0"
+      }
+    }
+  },
+  "author": "Antonio Mesquita",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/antonioqm/cordova-plugin-screen-protector/issues"
+  },
+  "homepage": "https://github.com/antonioqm/cordova-plugin-screen-protector#readme"
+}

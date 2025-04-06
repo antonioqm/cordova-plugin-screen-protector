@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="cordova-plugin-screen-protector"
+    version="1.0.0">
+
+    <name>Screen Protector</name>
+    <description>Protects against screen recording and screenshots</description>
+    <license>MIT</license>
+
+    <engines>
+        <engine name="cordova" version=">=9.0.0"/>
+        <engine name="cordova-ios" version=">=6.0.0"/>
+        <engine name="cordova-android" version=">=9.0.0"/>
+    </engines>
+
+    <js-module src="www/screenprotector.js" name="screenprotector">
+        <clobbers target="cordova.plugins.ScreenProtector" />
+    </js-module>
+
+    <platform name="ios">
+        <preference name="SWIFT_VERSION" default="5.0" />
+        <preference name="IPHONEOS_DEPLOYMENT_TARGET" default="13.0" />
+
+        <config-file target="config.xml" parent="/*">
+            <feature name="ScreenProtector">
+                <param name="ios-package" value="ScreenProtector"/>
+                <param name="onload" value="true"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/ios/ScreenProtector.swift"/>
+        <header-file src="src/ios/ScreenProtector-Bridging-Header.h"/>
+        <resource-file src="src/ios/img/camera.png"/>
+
+        <framework src="UIKit.framework"/>
+
+        <config-file target="*-Info.plist" parent="NSPhotoLibraryUsageDescription">
+            <string>This app needs access to detect screenshots.</string>
+        </config-file>
+
+        <config-file target="*-Info.plist" parent="UIFileSharingEnabled">
+            <true/>
+        </config-file>
+    </platform>
+
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="ScreenProtector">
+                <param name="android-package" value="com.antonioqm.screenprotector.ScreenProtector"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/android/ScreenProtector.kt" target-dir="src/com/antonioqm/screenprotector"/>
+
+        <framework src="org.jetbrains.kotlin:kotlin-stdlib:1.6.10" />
+    </platform>
+</plugin>
