@@ -2,7 +2,6 @@
 /platforms
 /plugins
 /hooks
-/www
 
 # Android
 *.apk
